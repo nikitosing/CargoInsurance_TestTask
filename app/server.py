@@ -22,7 +22,7 @@ async def push_price(price: Dict[(datetime.date, List[ResponsePriceItem])] = Bod
                 await item.save()
             else:
                 item.rate = price_item.rate
-                item.save()
+                await item.save()
     return ResponseStatus(message="success")
 
 
