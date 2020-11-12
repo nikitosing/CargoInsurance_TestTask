@@ -11,7 +11,7 @@ app = FastAPI()
 
 
 @app.put("/push_price", response_model=ResponseStatus)
-async def push_price(price: Dict[(datetime.date, List[PriceItem__])]):
+async def push_price(price: Dict[(datetime.date, List[ResponsePriceItem])]):
     for date_key in price:
         date = await Date.get_or_create(date=date_key)
         date = date[0]
@@ -23,6 +23,15 @@ async def push_price(price: Dict[(datetime.date, List[PriceItem__])]):
     return ResponseStatus(message="success")
 
 
+@app.get("/get_db", response_model=Dict[(datetime.date, List[PriceItem_Pydantic])])
+async def return_bd():
+    response_dict = {}
+    dates = await Date.filter().all()
+    for date in dates:
+        response_dict[date.date] = await PriceItem.filter(date_id=date.id).all()
+    return response_dict
+
+
 @app.get("/get_cost", response_model=ResponseCost, responses={404: {"model": ResponseStatus}})
 async def return_cost(declared_price: float, cargo_type: str, date: datetime.date):
     requested_date = await Date.get_or_none(date=date)
@@ -32,11 +41,6 @@ async def return_cost(declared_price: float, cargo_type: str, date: datetime.dat
     if requested_cargo is None:
         return JSONResponse(status_code=404, content={"message": "cargo_type not found"})
     return ResponseCost(cost=requested_cargo.rate * declared_price)
-
-
-@app.get('/get_hui')
-def return_hui():
-    return "8========D"
 
 
 register_tortoise(

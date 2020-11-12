@@ -1,6 +1,6 @@
-from pydantic import BaseModel
 import datetime
-from models import PriceItem_Pydantic
+
+from pydantic import BaseModel
 from pydantic.class_validators import List
 
 
@@ -12,11 +12,11 @@ class ResponseStatus(BaseModel):
     message: str
 
 
-class PriceItem__(BaseModel):
+class ResponsePriceItem(BaseModel):
     cargo_type: str
     rate: float
 
 
 class PriceForPush(BaseModel):
     date: datetime.date
-    items: List[PriceItem__]
+    items: List[ResponsePriceItem]
