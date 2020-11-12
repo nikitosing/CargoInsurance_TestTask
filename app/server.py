@@ -1,17 +1,18 @@
 import datetime
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from fastapi.responses import JSONResponse
 from models import *
 from models_response import *
 from pydantic.class_validators import List, Dict
 from tortoise.contrib.fastapi import register_tortoise
+from strings import example_push_price
 
 app = FastAPI()
 
 
 @app.put("/push_price", response_model=ResponseStatus)
-async def push_price(price: Dict[(datetime.date, List[ResponsePriceItem])]):
+async def push_price(price: Dict[(datetime.date, List[ResponsePriceItem])] = Body(..., example=example_push_price)):
     for date_key in price:
         date = await Date.get_or_create(date=date_key)
         date = date[0]
@@ -24,9 +25,9 @@ async def push_price(price: Dict[(datetime.date, List[ResponsePriceItem])]):
 
 
 @app.get("/get_db", response_model=Dict[(datetime.date, List[PriceItem_Pydantic])])
-async def return_bd():
+async def return_db():
     response_dict = {}
-    dates = await Date.filter().all()
+    dates = await Date.all()
     for date in dates:
         response_dict[date.date] = await PriceItem.filter(date_id=date.id).all()
     return response_dict
