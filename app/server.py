@@ -14,13 +14,15 @@ app = FastAPI()
 @app.put("/push_price", response_model=ResponseStatus)
 async def push_price(price: Dict[(datetime.date, List[ResponsePriceItem])] = Body(..., example=example_push_price)):
     for date_key in price:
-        date = await Date.get_or_create(date=date_key)
-        date = date[0]
+        date = (await Date.get_or_create(date=date_key))[0]
         for price_item in price[date_key]:
-            item = await PriceItem.get_or_create(cargo_type=price_item.cargo_type, date_id=date.id)
-            item = item[0]
-            item.rate = price_item.rate
-            await item.save()
+            item = await PriceItem.get_or_none(cargo_type=price_item.cargo_type, date_id=date.id)
+            if item is None:
+                item = PriceItem(cargo_type=price_item.cargo_type, date_id=date.id, rate=price_item.rate)
+                await item.save()
+            else:
+                item.rate = price_item.rate
+                item.save()
     return ResponseStatus(message="success")
 
 
@@ -46,7 +48,7 @@ async def return_cost(declared_price: float, cargo_type: str, date: datetime.dat
 
 register_tortoise(
     app,
-    db_url="sqlite://3_test.db",
+    db_url="sqlite://_test_.db",
     modules={"models": ["models"]},
     generate_schemas=True,
     add_exception_handlers=True,
