@@ -48,7 +48,7 @@ async def return_cost(declared_price: float, cargo_type: str, date: datetime.dat
 
 register_tortoise(
     app,
-    db_url="postgres://postgres:password@host.docker.internal:7432/postgres",
+    db_url="postgres://postgres:password@host.docker.internal:5432/postgres",
     modules={"models": ["models"]},
     generate_schemas=True,
     add_exception_handlers=True,
